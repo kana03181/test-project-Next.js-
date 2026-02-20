@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Post } from "@/app/_types/post";
 import HomeStyles from "@/app/_styles/Home.module.css";
-// import posts from '././_data/posts';
 
 export default function Page() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [clamp, setClamp] = useState<boolean>(true);
+  const [clamp, setClamp] = useState(true);
 
   useEffect(() => {
     const fetcher =  async () => {
