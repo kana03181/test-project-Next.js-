@@ -1,0 +1,66 @@
+.article{
+  max-width: 800px;
+  margin: 40px auto;
+  padding-inline: 1rem;
+}
+
+.contents{
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.contents + .contents{
+  margin-top: 2rem;
+}
+
+.header{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.main{
+  text-align: left;
+}
+
+.date{
+  color: #888;
+  font-size: .8rem;
+}
+
+.tags{
+  display: flex;
+  gap: .5rem;
+}
+
+.tagsCategory{
+  color: #06c;
+  border: 1px solid #06c;
+  padding: .2rem .4rem;
+  border-radius: .2rem;
+  font-size: .8rem;
+}
+
+.title{
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-block: .5rem 1rem;
+}
+
+.txt{
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 表示したい行数 */
+  -webkit-box-orient: vertical;
+}
+
+/* 詳細ページ用 */
+.full{
+  overflow: visible;
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+.contentMain{
+  padding: 1rem;
+}
