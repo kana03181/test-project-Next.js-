@@ -1,0 +1,68 @@
+
+.formItem{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.name{
+  width: 240px;
+}
+
+.textBox{
+  padding: calc(12 / 16 * 1rem);
+  border-radius: .5rem;
+  border: 1px solid #d1d5db;
+  width: 100%;
+}
+
+.formControl{
+  width: 100%;
+}
+
+
+.container{
+  max-width: 800px;
+  margin: 0 auto;
+  padding-block: 2.5rem;
+  padding-inline: 1rem;
+}
+
+.title{
+  font-size: 1.25rem;
+  margin-bottom: 2.5rem;
+  font-weight: 700;
+}
+
+.btnWrap{
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn{
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+  border-radius: .5rem;
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.btn.submit{
+  color: #fff;
+  background-color: #1f2937;
+}
+
+.btn.clear{
+  background-color: #e5e7eb;
+}
+
+
+.error{
+  color: #b91c1c;
+  font-size: .875rem;
+}
