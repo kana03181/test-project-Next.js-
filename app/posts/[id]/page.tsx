@@ -3,14 +3,15 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import type { Post } from "@/app/_types/post";
+// import type { Post } from "@/app/_types/post";
+import type { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 import HomeStyles from "@/app/_styles/Home.module.css";
 
 export default function Page() {
   const { id } = useParams<{id:string}>();
 
 
-  const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<MicroCmsPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,14 +20,18 @@ export default function Page() {
       try {
         setLoading(true);
         setError(null)
-        const res = await fetch(`https://1hmfpsvto6.execute-api.ap-northeast-1.amazonaws.com/dev/posts/${id}`);
+        const res = await fetch(`https://nextapp.microcms.io/api/v1/posts/${id}`, {
+          headers: {
+            "X-MICROCMS-API-KEY" : process.env.NEXT_PUBLIC_MICROCMSCMS_API_KEY as string,
+          }
+        });
 
         if (!res.ok) {
           throw new Error("記事の取得に失敗しました");
         }
 
         const data = await res.json();
-        setPost(data.post);
+        setPost(data);
 
       } catch (err) {
         if (err instanceof Error) {
@@ -75,7 +80,7 @@ export default function Page() {
             <Image
               width={1000}
               height={1000}
-              src={post.thumbnailUrl}
+              src={post.thumbnail.url}
               alt={post.title}
             />
           </figure>
@@ -85,7 +90,7 @@ export default function Page() {
             <p>{new Date(post.createdAt).toLocaleDateString("ja-JP", { year: "numeric", month: "numeric", day: "numeric" })}</p>
             <ul className={HomeStyles.tags}>
               {post.categories.map((category) => (
-                <li className={HomeStyles.tagsCategory} key={category} >{category}</li>
+                <li className={HomeStyles.tagsCategory} key={category.id} >{category.name}</li>
               ))}
             </ul>
           </div>
