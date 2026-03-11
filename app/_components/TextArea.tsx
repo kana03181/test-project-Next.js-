@@ -1,4 +1,3 @@
-"use client";
 
 import FormItem from "@/app/_components/FormItem";
 import FormStyle from "@/app/_styles/Form.module.css";
@@ -9,7 +8,7 @@ type Props = React.ComponentProps<"textarea"> & {
 
 export default function TextArea({label,  rows=8, ...textAreaProps}:Props) {
   return (
-    <FormItem label={label} htmlFor={textAreaProps.id}>
+    <FormItem label={label} htmlFor={textAreaProps.id} >
       <textarea
         {...textAreaProps}
         rows={rows}

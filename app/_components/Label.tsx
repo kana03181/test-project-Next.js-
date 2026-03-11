@@ -1,4 +1,3 @@
-"use client";
 
 import FormStyle from "@/app/_styles/Form.module.css";
 

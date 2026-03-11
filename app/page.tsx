@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-// import type { Post } from "@/app/_types/post";
-import type { MicroCmsPost } from "@/app/_types/MicroCmsPost";
+import { PostsIndexResponse } from "@/app/api/posts/route";
 import HomeStyles from "@/app/_styles/Home.module.css";
+// import type { Post } from "@/app/_types/post";
+// import type { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 
 export default function Page() {
 
-  const [posts, setPosts] = useState<MicroCmsPost[]>([]);
+  const [posts, setPosts] = useState<PostsIndexResponse["posts"]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clamp, setClamp] = useState(true);
@@ -18,11 +19,7 @@ export default function Page() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("https://nextapp.microcms.io/api/v1/posts", {
-          headers: {
-            "X-MICROCMS-API-KEY" : process.env.NEXT_PUBLIC_MICROCMSCMS_API_KEY as string,
-          }
-        });
+        const res = await fetch("api/posts");
         // console.log(res);
 
 
@@ -30,8 +27,9 @@ export default function Page() {
           throw new Error("記事の取得に失敗しました");
         }
 
-        const {contents} = await res.json();
-        setPosts(contents);
+        const data = await res.json();
+        // console.log(data);
+        setPosts(data.posts);
 
       } catch (err) {
         if (err instanceof Error) {
@@ -59,8 +57,8 @@ export default function Page() {
                   <div className={HomeStyles.header}>
                     <p className={HomeStyles.date}>{new Date(post.createdAt).toLocaleDateString("ja-JP", { year: "numeric", month: "numeric", day: "numeric" })}</p>
                     <ul className={HomeStyles.tags}>
-                      {post.categories.map((category) => (
-                        <li className={HomeStyles.tagsCategory} key={category.id} >{category.name}</li>
+                      {post.postCategories.map((category) => (
+                        <li className={HomeStyles.tagsCategory} key={category.category.id} >{category.category.name}</li>
                       ))}
                     </ul>
                   </div>
