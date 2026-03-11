@@ -1,4 +1,3 @@
-"use client";
 
 import FormItem from "@/app/_components/FormItem";
 import FormStyle from "@/app/_styles/Form.module.css";
