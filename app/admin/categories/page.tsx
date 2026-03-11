@@ -37,6 +37,10 @@ export default function Page() {
     fetcher()
   }, [])
 
+  if(loading) return <div><p>読み込み中...</p></div>
+  if (error) return <div><p>エラー：{error}</p></div>
+
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-16">

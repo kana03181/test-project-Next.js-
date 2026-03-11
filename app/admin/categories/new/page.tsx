@@ -46,7 +46,7 @@ export default function Page() {
   return (
     <div className="container mx-auto px-4">
       <div className="mb-8">
-        <h2 className="text-xl font-bold">新規作成</h2>
+        <h2 className="text-xl font-bold">カテゴリー作成</h2>
       </div>
       <div>
         <CategoryForm

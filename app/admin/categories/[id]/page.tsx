@@ -82,18 +82,16 @@ export default function Page() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-bold">記事編集</h2>
+        <h2 className="text-xl font-bold">カテゴリー編集</h2>
       </div>
-      <div>
-        <CategoryForm
-          mode="edit"
-          name={name}
-          setName={setName}
-          onSubmit={handleSubmit}
-          onDelete={handleDeletePost}
-          disabled={isSubmitting}
-        />
-      </div>
+      <CategoryForm
+        mode="edit"
+        name={name}
+        setName={setName}
+        onSubmit={handleSubmit}
+        onDelete={handleDeletePost}
+        disabled={isSubmitting}
+      />
     </div>
   );
 }

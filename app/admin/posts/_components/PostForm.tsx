@@ -1,6 +1,7 @@
 
 import { Category } from "@/app/api/admin/posts/[id]/route";
 import CategoriesSelect from "@/app/admin/posts/_components/CategoriesSelect"
+import Label from "@/app/_components/Label"
 
 type Props = {
   mode: "new" | "edit"
@@ -9,7 +10,7 @@ type Props = {
   content: string
   setContent: (content: string) => void
   thumbnailUrl: string
-  setThumbnailUrl: (setThumbnailUrl: string) => void
+  setThumbnailUrl: (thumbnailUrl: string) => void
   categories: Category[]
   setCategories: (categories: Category[]) => void
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
@@ -35,7 +36,7 @@ export default function PostForm({
     <form onSubmit={onSubmit}>
       <div className="grid gap-3">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">タイトル</label>
+          <Label htmlFor="title">タイトル</Label>
           <input
             type="text"
             id="title"
@@ -46,7 +47,7 @@ export default function PostForm({
           />
         </div>
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">内容</label>
+          <Label htmlFor="content">内容</Label>
           <textarea
             id="content"
             value={content}
@@ -56,7 +57,7 @@ export default function PostForm({
           />
         </div>
         <div>
-          <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700">サムネイルURL</label>
+          <Label htmlFor="thumbnailUrl">サムネイルURL</Label>
           <input
             type="text"
             id="thumbnailUrl"
@@ -67,7 +68,7 @@ export default function PostForm({
           />
         </div>
         <div>
-          <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-700">カテゴリー</label>
+          <Label>カテゴリー</Label>
           <CategoriesSelect
             selectedCategories={categories}
             setSelectedCategories={setCategories}

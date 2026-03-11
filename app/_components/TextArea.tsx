@@ -8,7 +8,7 @@ type Props = React.ComponentProps<"textarea"> & {
 
 export default function TextArea({label,  rows=8, ...textAreaProps}:Props) {
   return (
-    <FormItem label={label} htmlFor={textAreaProps.id}>
+    <FormItem label={label} htmlFor={textAreaProps.id} >
       <textarea
         {...textAreaProps}
         rows={rows}

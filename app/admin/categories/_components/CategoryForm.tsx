@@ -1,3 +1,5 @@
+import Input from "@/app/_components/Input"
+
 
 type Props = {
   mode: "new" | "edit",
@@ -19,17 +21,17 @@ export default function CategoryForm({
   return (
     <form onSubmit={onSubmit}>
       <div className="grid gap-3">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">カテゴリー名</label>
-          <input
-            type="name"
+          {/* <label htmlFor="name" className="block text-sm font-medium text-gray-700">カテゴリー名</label> */}
+          <Input
+            label="カテゴリー名"
+            type="text"
             id="title"
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={disabled}
             className="mt-1 block w-full rounded-md border border-gray-200 p-3"
+            withStyle={false}
           />
-        </div>
         <div>
           <button type="submit" disabled={disabled} className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             {mode === "new" ? "作成" : "更新"}
