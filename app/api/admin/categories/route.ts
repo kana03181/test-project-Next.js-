@@ -51,7 +51,15 @@ export type CreateCategoryResponse = {
   id : number
 }
 
-export const POST = async ( request:Request ) => {
+export const POST = async (request: Request) => {
+
+  const token = request.headers.get("Authorization") ?? "";
+  const { error } = await supabase.auth.getUser(token);
+
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+
   try {
     // リクエストのbodyを取得
     const body = await request.json()

@@ -24,7 +24,6 @@ export type PostIndexResponse = {
 export const GET = async (request: NextRequest) => {
 
   const token = request.headers.get("Authorization") ?? "";
-
   const { error } = await supabase.auth.getUser(token);
 
   if (error)
@@ -81,6 +80,13 @@ export type CreatePostResponse = {
 
 // POSTという命名にすることで、POSTリクエストの時にこの関数が呼ばれる
 export const POST = async (request: Request) => {
+  const token = request.headers.get("Authorization") ?? "";
+  const { error } = await supabase.auth.getUser(token);
+
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+
   try {
     // リクエストのbodyを取得
     const body: CreatePostRequestBody = await request.json()

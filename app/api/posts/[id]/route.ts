@@ -49,8 +49,6 @@ export const GET = async (
       },
     })
 
-    console.log(post);
-
     if (!post) {
       return NextResponse.json(
         { message: "記事が見つかりません。" },

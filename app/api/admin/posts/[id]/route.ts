@@ -26,7 +26,8 @@ export type PostShowResponse = {
 
 export const GET = async (
   request: NextRequest,
-  { params } :{ params:Promise<{ id:string }>},
+  { params }: { params: Promise<{ id: string }> },
+
 ) => {
 
   const token = request.headers.get("Authorization") ?? "";
@@ -87,8 +88,16 @@ export type UpdatePostRequestBody = {
 // PUTという命名にすることで、PUTリクエストの時にこの関数が呼ばれる
 export const PUT = async (
   request: NextRequest,
-  { params }: { params:Promise<{ id:string }> }, // ここでリクエストパラメータを受け取る
+  { params }: { params: Promise<{ id: string }> }, // ここでリクエストパラメータを受け取る
+
 ) => {
+  const token = request.headers.get("Authorization") ?? "";
+  const { error } = await supabase.auth.getUser(token);
+
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+
   // paramsの中にidが入っているので、それを取り出す
   const { id } = await params
 
@@ -138,9 +147,17 @@ export const PUT = async (
 
 // DELETEという命名にすることで、DELETEリクエストの時にこの関数が呼ばれる
 export const DELETE = async (
-  _request: NextRequest,
-  { params }: { params:Promise<{id:string}> }, // ここでリクエストパラメータを受け取る
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }, // ここでリクエストパラメータを受け取る
+
 ) => {
+  const token = request.headers.get("Authorization") ?? "";
+  const { error } = await supabase.auth.getUser(token);
+
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+
   // paramsの中にidが入っているので、それを取り出す
   const { id } = await params
 
