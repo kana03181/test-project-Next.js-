@@ -3,20 +3,28 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function Page() {
   const [categories, setCategories] = useState<CategoriesIndexResponse["categories"]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { token } = useSupabaseSession();
 
   useEffect(() => {
+    if (!token) return;
+
     const fetcher = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/admin/categories")
+        const res = await fetch("/api/admin/categories", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          }
+        })
 
         if (!res.ok) {
           throw new Error("カテゴリーの取得に失敗しました");
@@ -35,7 +43,7 @@ export default function Page() {
       }
     }
     fetcher()
-  }, [])
+  }, [token])
 
   if(loading) return <div><p>読み込み中...</p></div>
   if (error) return <div><p>エラー：{error}</p></div>

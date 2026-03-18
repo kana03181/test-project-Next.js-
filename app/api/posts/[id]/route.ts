@@ -8,7 +8,7 @@ export type PostShowResponse = {
     id: number
     title: string
     content: string
-    thumbnailUrl: string
+    thumbnailImageKey: string
     createdAt: Date
     updatedAt: Date
     postCategories: {
@@ -48,6 +48,8 @@ export const GET = async (
         },
       },
     })
+
+    console.log(post);
 
     if (!post) {
       return NextResponse.json(

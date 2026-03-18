@@ -4,29 +4,35 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { UpdatePostRequestBody, PostShowResponse, Category } from "@/app/api/admin/posts/[id]/route";
 import PostForm from "@/app/admin/posts/_components/PostForm";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function Page() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [thumbnailImageKey, setThumbnailImageKey] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useParams();
   const router = useRouter();
 
+  const { token } = useSupabaseSession();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!token) return;
 
     try {
       setIsSubmitting(true);
 
-      const body:UpdatePostRequestBody = {title, content, thumbnailUrl, categories}
+      const body:UpdatePostRequestBody = {title, content, thumbnailImageKey, categories}
 
       const res = await fetch(`/api/admin/posts/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token,
         },
         body: JSON.stringify(body)
       });
@@ -73,16 +79,23 @@ export default function Page() {
   }
 
   useEffect(() => {
+    if (!token) return;
+
     const fetcher = async () => {
-      const res = await fetch(`/api/admin/posts/${id}`);
+      const res = await fetch(`/api/admin/posts/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        }
+      });
       const { post }: { post: PostShowResponse["post"] } = await res.json();
       setTitle(post.title);
       setContent(post.content);
-      setThumbnailUrl(post.thumbnailUrl);
+      setThumbnailImageKey(post.thumbnailImageKey);
       setCategories(post.postCategories.map((pc) =>pc.category ));
     };
     fetcher();
-  }, [id]);
+  }, [id, token]);
 
 
   return (
@@ -97,8 +110,8 @@ export default function Page() {
           setTitle={setTitle}
           content={content}
           setContent={setContent}
-          thumbnailUrl={thumbnailUrl}
-          setThumbnailUrl={setThumbnailUrl}
+          thumbnailImageKey={thumbnailImageKey}
+          setThumbnailImageKey={setThumbnailImageKey}
           categories={categories}
           setCategories={setCategories}
           onSubmit={handleSubmit}

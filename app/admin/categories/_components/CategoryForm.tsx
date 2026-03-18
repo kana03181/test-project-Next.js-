@@ -21,7 +21,6 @@ export default function CategoryForm({
   return (
     <form onSubmit={onSubmit}>
       <div className="grid gap-3">
-          {/* <label htmlFor="name" className="block text-sm font-medium text-gray-700">カテゴリー名</label> */}
           <Input
             label="カテゴリー名"
             type="text"

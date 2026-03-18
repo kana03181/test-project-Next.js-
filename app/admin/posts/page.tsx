@@ -3,20 +3,29 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PostsIndexResponse } from "@/app/api/posts/route";
-
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function Page() {
   const [posts, setPosts] = useState<PostsIndexResponse["posts"]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useSupabaseSession();
 
   useEffect(() => {
+    if (!token) return;
+
     const fetcher = async() => {
       try {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/admin/posts");
+        const res = await fetch("/api/admin/posts", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          }
+        });
+
         if (!res.ok) {
           throw new Error("記事の取得に失敗しました");
         }
@@ -28,14 +37,14 @@ export default function Page() {
 
       } catch (err) {
         if (err instanceof Error) {
-          setError("不明なエラーです")
+          setError("不明なエラーです");
         }
       } finally {
         setLoading(false);
       }
     }
     fetcher();
-  }, [])
+  }, [token])
 
   if(loading) return <div><p>読み込み中...</p></div>
   if (error) return <div><p>エラー：{error}</p></div>

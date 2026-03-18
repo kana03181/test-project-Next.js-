@@ -1,6 +1,7 @@
 
 import { Category } from "@/app/api/admin/posts/[id]/route";
 import { useState, useEffect } from "react";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 type Props = {
   selectedCategories: Category[]
@@ -14,6 +15,8 @@ export default function CategoriesSelect({
   disabled
 }: Props) {
   const [categories, setCategories] = useState<Category[]>([]);
+
+  const { token } = useSupabaseSession();
 
   const toggleCategory = (id: number) => {
     if (disabled) return;
@@ -33,14 +36,22 @@ export default function CategoriesSelect({
   }
 
   useEffect(() => {
+    if (!token) return;
+
     const fetcher = async () => {
-      const res = await fetch("/api/admin/categories");
+      const res = await fetch("/api/admin/categories", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+
+        }
+      });
       const { categories } = await res.json();
       setCategories(categories);
     }
 
     fetcher()
-  }, [])
+  }, [token])
 
 
   return (

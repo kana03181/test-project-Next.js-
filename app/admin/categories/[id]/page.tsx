@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CategoryShowResponse, UpdateCategoryRequestBody} from "@/app/api/admin/categories/[id]/route";
 import CategoryForm from "@/app/admin/categories/_components/CategoryForm";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function Page() {
   const [name, setName] = useState("");
@@ -11,8 +12,12 @@ export default function Page() {
   const { id } = useParams();
   const router = useRouter();
 
+  const { token } = useSupabaseSession();
+
   const handleSubmit = async(e:React.FormEvent<HTMLElement>) => {
     e.preventDefault();
+
+    if (!token) return;
 
     try {
       setIsSubmitting(true);
@@ -23,6 +28,7 @@ export default function Page() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token,
         },
         body: JSON.stringify(body),
       });
@@ -46,7 +52,9 @@ export default function Page() {
     }
   }
 
-  const handleDeletePost = async() => {
+  const handleDeletePost = async () => {
+    if (!token) return;
+
     if (!confirm("カテゴリーを削除しますか？"))
       return;
 
@@ -55,7 +63,12 @@ export default function Page() {
 
       await fetch(`/api/admin/categories/${id}`, {
         method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
       })
+
       alert("カテゴリーを削除しました");
 
       router.push("/admin/categories");
@@ -71,13 +84,20 @@ export default function Page() {
   }
 
   useEffect(() => {
+    if (!token) return;
+
     const fetcher = async() => {
-      const res = await fetch(`/api/admin/categories/${id}`);
+      const res = await fetch(`/api/admin/categories/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
+      });
       const { category }: CategoryShowResponse = await res.json();
       setName(category.name);
     }
     fetcher();
-  }, [id]);
+  }, [id, token]);
 
   return (
     <div className="p-8">

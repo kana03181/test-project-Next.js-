@@ -2,6 +2,10 @@
 import { Category } from "@/app/api/admin/posts/[id]/route";
 import CategoriesSelect from "@/app/admin/posts/_components/CategoriesSelect"
 import Label from "@/app/_components/Label"
+import { supabase } from "@/app/_libs/supabase";
+import { v4 as uuidv4 } from "uuid";
+import { useState, ChangeEvent, useEffect } from "react";
+import Image from "next/image";
 
 type Props = {
   mode: "new" | "edit"
@@ -9,8 +13,8 @@ type Props = {
   setTitle:(title: string) => void
   content: string
   setContent: (content: string) => void
-  thumbnailUrl: string
-  setThumbnailUrl: (thumbnailUrl: string) => void
+  thumbnailImageKey: string
+  setThumbnailImageKey: (thumbnailImageKey: string) => void
   categories: Category[]
   setCategories: (categories: Category[]) => void
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
@@ -24,14 +28,67 @@ export default function PostForm({
   setTitle,
   content,
   setContent,
-  thumbnailUrl,
-  setThumbnailUrl,
+  thumbnailImageKey,
+  setThumbnailImageKey,
   categories,
   setCategories,
   onSubmit,
   onDelete,
   disabled
 }: Props) {
+
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
+    null,
+  )
+
+  // アップロード時に取得した、thumbnailImageKeyを用いて画像のURLを取得
+  useEffect(() => {
+    if (!thumbnailImageKey) return;
+
+    const fetcher = async () => {
+      const {
+        data:{ publicUrl },
+      } = await supabase.storage
+        .from("post_thumbnail")
+        .getPublicUrl(thumbnailImageKey)
+
+      setThumbnailImageUrl(publicUrl)
+    }
+    fetcher();
+  }, [thumbnailImageKey])
+
+
+  const handleImageChange = async (
+    event:ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+
+    if (!event.target.files || event.target.files.length == 0) {
+      return;
+    }
+
+    // 選択された画像を取得
+    const file = event.target.files[0];
+
+    // ファイルパスを指定
+    const filePath = `private/${uuidv4()}`
+
+    // Supabaseに画像をアップロード
+    const { data, error } = await supabase.storage
+      .from("post_thumbnail") // バケット名を指定
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert:false,
+      })
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+    setThumbnailImageKey(data.path);
+
+  }
+
   return (
     <form onSubmit={onSubmit}>
       <div className="grid gap-3">
@@ -57,15 +114,24 @@ export default function PostForm({
           />
         </div>
         <div>
-          <Label htmlFor="thumbnailUrl">サムネイルURL</Label>
+          <Label htmlFor="thumbnailImageKey">サムネイルURL</Label>
           <input
-            type="text"
-            id="thumbnailUrl"
-            value={thumbnailUrl}
-            onChange={(e) => setThumbnailUrl(e.target.value)}
-            disabled={disabled}
+            type="file"
+            id="thumbnailImageKey"
+            onChange={handleImageChange}
+            accept="image/*"
             className="mt-1 block w-full rounded-md border border-gray-200 p-3"
           />
+          {thumbnailImageUrl && (
+            <div className="mt-2">
+              <Image
+                src={thumbnailImageUrl}
+                alt="thumbnail"
+                width={400}
+                height={400}
+              />
+            </div>
+          )}
         </div>
         <div>
           <Label>カテゴリー</Label>

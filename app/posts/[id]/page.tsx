@@ -7,15 +7,39 @@ import { useParams } from "next/navigation";
 // import type { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 import { PostShowResponse } from "@/app/api/posts/[id]/route";
 import HomeStyles from "@/app/_styles/Home.module.css";
+import { supabase } from "@/app/_libs/supabase";
+
+
 
 export default function Page() {
   const { id } = useParams<{id:string}>();
   const [post, setPost] = useState<PostShowResponse["post"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
+    null,
+  )
 
   useEffect(() => {
+    if (!post?.thumbnailImageKey) return;
+
     const fetcher = async () => {
+      const {
+        data: { publicUrl },
+      } = await supabase.storage
+        .from("post_thumbnail")
+          .getPublicUrl(post.thumbnailImageKey)
+
+      // console.log(post.thumbnailImageKey);
+      setThumbnailImageUrl(publicUrl)
+    }
+    fetcher()
+  }, [post?.thumbnailImageKey])
+
+  useEffect(() => {
+
+    const fetcher = async () => {
+
       try {
         setLoading(true);
         setError(null)
@@ -71,14 +95,16 @@ export default function Page() {
     <article className={HomeStyles.article}>
       <div className={HomeStyles.container}>
         <div className={HomeStyles.contentHeader}>
-          <figure className={HomeStyles.thumbnail}>
-            <Image
-              width={1000}
-              height={1000}
-              src={post.thumbnailUrl}
-              alt={post.title}
-            />
-          </figure>
+          {thumbnailImageUrl && (
+            <figure className={HomeStyles.thumbnail}>
+                <Image
+                  width={1000}
+                  height={1000}
+                  src={thumbnailImageUrl}
+                  alt="thumbnail"
+                />
+            </figure>
+          )}
         </div>
         <div className={HomeStyles.contentMain}>
           <div className={HomeStyles.header}>
