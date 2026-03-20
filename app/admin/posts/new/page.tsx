@@ -7,25 +7,30 @@ import { Category } from "@/app/api/admin/posts/[id]/route";
 import { CreatePostRequestBody } from "@/app/api/admin/posts/route";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
+type FormData = {
+  title: string
+  content: string
+  thumbnailImageKey: string
+  categories: Category[]
+}
+
 export default function Page() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [thumbnailImageKey, setThumbnailImageKey] = useState("");
-  const [categories, setCategories] = useState<Category[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter();
   const { token } = useSupabaseSession();
 
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleSubmit = async (data:FormData) => {
     if (!token) return;
 
     try {
       setIsSubmitting(true);
 
-      const body: CreatePostRequestBody = { title, content, thumbnailImageKey, categories };
+      const body: CreatePostRequestBody = {
+        title: data.title,
+        content: data.content,
+        thumbnailImageKey: data.thumbnailImageKey,
+        categories: data.categories
+      };
 
       const res = await fetch("/api/admin/posts", {
         method: "POST",
@@ -36,10 +41,14 @@ export default function Page() {
         body: JSON.stringify(body),
       })
 
+      if (!res.ok) {
+        throw new Error("記事の作成に失敗しました");
+      }
+
       const { id } = await res.json();
 
-      router.push(`/admin/posts/${id}`)
       alert("記事を作成しました");
+      router.push(`/admin/posts`)
 
     } catch (err) {
       if (err instanceof Error) {
@@ -61,14 +70,6 @@ export default function Page() {
       <div>
         <PostForm
           mode="new"
-          title={title}
-          setTitle={setTitle}
-          content={content}
-          setContent={setContent}
-          thumbnailImageKey={thumbnailImageKey}
-          setThumbnailImageKey={setThumbnailImageKey}
-          categories={categories}
-          setCategories={setCategories}
           onSubmit={handleSubmit}
           disabled={isSubmitting}
         />

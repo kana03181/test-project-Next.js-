@@ -4,35 +4,34 @@ import { useState, useEffect } from "react";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 type Props = {
-  selectedCategories: Category[]
-  setSelectedCategories: (categories: Category[]) => void
+  value: Category[]
+  onChange: (categories: Category[]) => void
   disabled: boolean
 }
 
 export default function CategoriesSelect({
-  selectedCategories,
-  setSelectedCategories,
+  value,
+  onChange,
   disabled
 }: Props) {
   const [categories, setCategories] = useState<Category[]>([]);
-
   const { token } = useSupabaseSession();
 
   const toggleCategory = (id: number) => {
     if (disabled) return;
 
-    const exists = selectedCategories.some((category) => category.id === id)
+    const exists = value.some((category) => category.id === id)
 
     if (exists) {
-      setSelectedCategories(
-        selectedCategories.filter((category) => category.id !== id )
+      onChange(
+        value.filter((category) => category.id !== id )
       )
       return
     }
 
     const category = categories.find((c) => c.id === id);
     if (!category) return;
-    setSelectedCategories([...selectedCategories, category])
+    onChange([...value, category])
   }
 
   useEffect(() => {
@@ -58,7 +57,7 @@ export default function CategoriesSelect({
     <div className="w-full">
       <div className="flex flex-wrap gap-2">
         { categories.map((category) => {
-          const isSelected = selectedCategories.some(
+          const isSelected = value.some(
             (selected) => selected.id === category.id
           )
           return (

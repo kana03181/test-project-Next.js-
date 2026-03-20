@@ -7,20 +7,17 @@ import CategoryForm from "@/app/admin/categories/_components/CategoryForm";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
 
 export default function Page() {
-  const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { token } = useSupabaseSession();
 
-  const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleSubmit = async (data:{name: string}) => {
     if (!token) return;
 
     try {
       setIsSubmitting(true);
 
-      const body: CreateCategoryRequestBody = { name }
+      const body: CreateCategoryRequestBody = { name: data.name }
 
       const res = await fetch("/api/admin/categories", {
         method: "POST",
@@ -31,10 +28,14 @@ export default function Page() {
         body: JSON.stringify(body),
       })
 
+      if (!res.ok) {
+        throw new Error("カテゴリーの作成に失敗しました");
+      }
+
       const { id } = await res.json();
 
-      router.push(`/admin/categories/${id}`);
       alert("カテゴリーを作成しました");
+      router.push(`/admin/categories`);
 
     } catch (err) {
       if (err instanceof Error) {
@@ -56,8 +57,6 @@ export default function Page() {
       <div>
         <CategoryForm
           mode="new"
-          name={name}
-          setName={setName}
           onSubmit={handleSubmit}
           disabled={isSubmitting}
         />

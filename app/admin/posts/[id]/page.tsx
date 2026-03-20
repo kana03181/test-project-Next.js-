@@ -1,32 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { UpdatePostRequestBody, PostShowResponse, Category } from "@/app/api/admin/posts/[id]/route";
 import PostForm from "@/app/admin/posts/_components/PostForm";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import useSWR from "swr";
+
+type FormValues = {
+  title: string
+  content: string
+  thumbnailImageKey: string
+  categories: Category[]
+}
 
 export default function Page() {
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [thumbnailImageKey, setThumbnailImageKey] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useParams();
   const router = useRouter();
-
   const { token } = useSupabaseSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
 
+  //更新
+  const handleSubmit = async (data:FormValues) => {
     if (!token) return;
 
     try {
       setIsSubmitting(true);
 
-      const body:UpdatePostRequestBody = {title, content, thumbnailImageKey, categories}
+      const body: UpdatePostRequestBody = {
+        title: data.title,
+        content: data.content,
+        thumbnailImageKey: data.thumbnailImageKey,
+        categories: data.categories
+      }
 
       const res = await fetch(`/api/admin/posts/${id}`, {
         method: "PUT",
@@ -40,7 +47,9 @@ export default function Page() {
       if (!res.ok) {
         throw new Error("更新に失敗しました");
       }
+
       alert("更新しました");
+      router.push("/admin/posts");
 
     } catch (err) {
       if (err instanceof Error) {
@@ -54,18 +63,26 @@ export default function Page() {
     }
   }
 
+  //削除
   const handleDeletePost = async () => {
-    if (!confirm("記事を削除しますか？"))
-      return;
+    if (!confirm("記事を削除しますか？")) return;
+    if (!token) return;
 
     try {
       setIsSubmitting(true);
-      await fetch(`/api/admin/posts/${id}`, {
+
+      const res = await fetch(`/api/admin/posts/${id}`, {
         method: "DELETE",
+        headers: {
+        Authorization: token,
+        },
       });
 
-      alert("記事を削除しました");
+      if (!res.ok) {
+        throw new Error("記事の削除に失敗しました");
+      }
 
+      alert("記事を削除しました");
       router.push("/admin/posts");
 
     } catch (err) {
@@ -78,25 +95,39 @@ export default function Page() {
     }
   }
 
-  useEffect(() => {
-    if (!token) return;
+  //記事取得
+  const fetcher = async (url: string) => {
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token!,
+      }
+    });
 
-    const fetcher = async () => {
-      const res = await fetch(`/api/admin/posts/${id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        }
-      });
-      const { post }: { post: PostShowResponse["post"] } = await res.json();
-      setTitle(post.title);
-      setContent(post.content);
-      setThumbnailImageKey(post.thumbnailImageKey);
-      setCategories(post.postCategories.map((pc) =>pc.category ));
-    };
-    fetcher();
-  }, [id, token]);
+    if (!res.ok) {
+      throw new Error("記事の取得に失敗しました");
+    }
 
+    return res.json();
+  }
+
+  const { data, error, isLoading } = useSWR<PostShowResponse>(
+    token && id ? `/api/admin/posts/${id}` : null,
+    fetcher
+  );
+
+  if(isLoading) return <div><p>読み込み中...</p></div>
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
+
+  const post = data?.post;
+
+  const defaultValues:FormValues= {
+    title: post?.title ?? "",
+    content: post?.content ?? "",
+    thumbnailImageKey: post?.thumbnailImageKey ?? "",
+    categories: post?.postCategories?.map(
+      (pc) => pc.category)?? [],
+  };
 
   return (
     <div className="p-8">
@@ -106,14 +137,7 @@ export default function Page() {
       <div>
         <PostForm
           mode="edit"
-          title={title}
-          setTitle={setTitle}
-          content={content}
-          setContent={setContent}
-          thumbnailImageKey={thumbnailImageKey}
-          setThumbnailImageKey={setThumbnailImageKey}
-          categories={categories}
-          setCategories={setCategories}
+          defaultValues={defaultValues}
           onSubmit={handleSubmit}
           onDelete={handleDeletePost}
           disabled={isSubmitting}

@@ -3,27 +3,42 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-// import type { Post } from "@/app/_types/post";
-// import type { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 import { PostShowResponse } from "@/app/api/posts/[id]/route";
 import HomeStyles from "@/app/_styles/Home.module.css";
 import { supabase } from "@/app/_libs/supabase";
-
-
+import useSWR from "swr";
 
 export default function Page() {
-  const { id } = useParams<{id:string}>();
-  const [post, setPost] = useState<PostShowResponse["post"] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
+
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
     null,
   )
 
+  // SWR fetcher
+  const fetcher = async (url: string) => {
+  const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error("記事の取得に失敗しました");
+    }
+
+    return res.json();
+  }
+
+  // SWR
+  const { data, error, isLoading } = useSWR<PostShowResponse>(
+    id ? `/api/posts/${id}` : null,
+    fetcher
+  );
+
+  const post = data?.post;
+
+  // サムネイル取得
   useEffect(() => {
     if (!post?.thumbnailImageKey) return;
 
-    const fetcher = async () => {
+    const fetchThumbnail = async () => {
       const {
         data: { publicUrl },
       } = await supabase.storage
@@ -33,62 +48,13 @@ export default function Page() {
       // console.log(post.thumbnailImageKey);
       setThumbnailImageUrl(publicUrl)
     }
-    fetcher()
+    fetchThumbnail();
   }, [post?.thumbnailImageKey])
 
-  useEffect(() => {
 
-    const fetcher = async () => {
-
-      try {
-        setLoading(true);
-        setError(null)
-        const res = await fetch(`/api/posts/${id}`);
-
-        if (!res.ok) {
-          throw new Error("記事の取得に失敗しました");
-        }
-
-        const data = await res.json();
-        setPost(data.post);
-
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("不明なエラーです");
-        }
-
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetcher();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div>
-        <p>読み込み中...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div>
-        <p>エラー：{error}</p>
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div>
-        <p>記事が見つかりません。</p>
-      </div>
-    );
-  }
+  if(isLoading) return <div><p>読み込み中...</p></div>
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
+  if (!post) return <div><p>記事が見つかりません。</p></div>
 
   return (
 

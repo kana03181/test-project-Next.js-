@@ -1,53 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import useSWR from 'swr'
 
 export default function Page() {
-  const [categories, setCategories] = useState<CategoriesIndexResponse["categories"]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { token } = useSupabaseSession();
 
-  useEffect(() => {
-    if (!token) return;
-
-    const fetcher = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch("/api/admin/categories", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          }
-        })
-
-        if (!res.ok) {
-          throw new Error("カテゴリーの取得に失敗しました");
-        }
-
-        const {categories} = await res.json();
-        setCategories(categories);
-
-      } catch (err) {
-        if (err instanceof Error) {
-          setError("不明なエラーです")
-        }
-
-      } finally {
-        setLoading(false);
+  const fetcher = async (url: string) => {
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token!,
       }
+    })
+
+    if (!res.ok) {
+      throw new Error("カテゴリーの取得に失敗しました");
     }
-    fetcher()
-  }, [token])
 
-  if(loading) return <div><p>読み込み中...</p></div>
-  if (error) return <div><p>エラー：{error}</p></div>
+    return res.json();
+  }
 
+  const { data, error, isLoading } = useSWR<CategoriesIndexResponse>(
+    token ? "/api/admin/categories" : null,
+    fetcher
+  );
+
+  if(isLoading) return <div><p>読み込み中...</p></div>
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
+
+  const categories = data?.categories ?? [];
 
   return (
     <div className="p-8">
