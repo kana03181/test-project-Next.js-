@@ -5,37 +5,50 @@ import { useRouter } from "next/navigation";
 import PostForm from "@/app/admin/posts/_components/PostForm";
 import { Category } from "@/app/api/admin/posts/[id]/route";
 import { CreatePostRequestBody } from "@/app/api/admin/posts/route";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+
+type FormData = {
+  title: string
+  content: string
+  thumbnailImageKey: string
+  categories: Category[]
+}
 
 export default function Page() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState(
-    "https://placehold.jp/800x400.png",
-  );
-  const [categories, setCategories] = useState<Category[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter();
+  const { token } = useSupabaseSession();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (data:FormData) => {
+    if (!token) return;
 
     try {
       setIsSubmitting(true);
 
-      const body: CreatePostRequestBody = { title, content, thumbnailUrl, categories };
+      const body: CreatePostRequestBody = {
+        title: data.title,
+        content: data.content,
+        thumbnailImageKey: data.thumbnailImageKey,
+        categories: data.categories
+      };
 
       const res = await fetch("/api/admin/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token,
         },
         body: JSON.stringify(body),
       })
 
+      if (!res.ok) {
+        throw new Error("記事の作成に失敗しました");
+      }
+
       const { id } = await res.json();
 
-      router.push(`/admin/posts/${id}`)
       alert("記事を作成しました");
+      router.push(`/admin/posts`)
 
     } catch (err) {
       if (err instanceof Error) {
@@ -56,15 +69,13 @@ export default function Page() {
       </div>
       <div>
         <PostForm
+          defaultValues={{
+            title: "",
+            content: "",
+            thumbnailImageKey: "",
+            categories: []
+          }}
           mode="new"
-          title={title}
-          setTitle={setTitle}
-          content={content}
-          setContent={setContent}
-          thumbnailUrl={thumbnailUrl}
-          setThumbnailUrl={setThumbnailUrl}
-          categories={categories}
-          setCategories={setCategories}
           onSubmit={handleSubmit}
           disabled={isSubmitting}
         />

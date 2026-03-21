@@ -4,25 +4,29 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CategoryShowResponse, UpdateCategoryRequestBody} from "@/app/api/admin/categories/[id]/route";
 import CategoryForm from "@/app/admin/categories/_components/CategoryForm";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
-  const [name, setName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useParams();
   const router = useRouter();
+  const { token } = useSupabaseSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async(e:React.FormEvent<HTMLElement>) => {
-    e.preventDefault();
+  //更新
+  const handleSubmit = async(data:{ name:string }) => {
+    if (!token) return;
 
     try {
       setIsSubmitting(true);
 
-      const body: UpdateCategoryRequestBody = { name };
+      const body: UpdateCategoryRequestBody = { name:data.name };
 
       const res = await fetch(`/api/admin/categories/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token,
         },
         body: JSON.stringify(body),
       });
@@ -31,7 +35,6 @@ export default function Page() {
         throw new Error("更新に失敗しました");
       }
       alert("カテゴリーを更新しました");
-
       router.push("/admin/categories");
 
     } catch (err) {
@@ -46,18 +49,24 @@ export default function Page() {
     }
   }
 
-  const handleDeletePost = async() => {
-    if (!confirm("カテゴリーを削除しますか？"))
-      return;
+  //削除
+  const handleDeletePost = async () => {
+    if (!token) return;
+
+    if (!confirm("カテゴリーを削除しますか？")) return;
 
     try {
       setIsSubmitting(true);
 
       await fetch(`/api/admin/categories/${id}`, {
         method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        }
       })
-      alert("カテゴリーを削除しました");
 
+      alert("カテゴリーを削除しました");
       router.push("/admin/categories");
 
     } catch (err) {
@@ -70,14 +79,14 @@ export default function Page() {
     }
   }
 
-  useEffect(() => {
-    const fetcher = async() => {
-      const res = await fetch(`/api/admin/categories/${id}`);
-      const { category }: CategoryShowResponse = await res.json();
-      setName(category.name);
-    }
-    fetcher();
-  }, [id]);
+  //カテゴリー取得
+  const { data, error } = useFetch<CategoryShowResponse>(`/api/admin/categories/${id}`);
+  const category = data?.category;
+
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
+  if(!category) return <div><p>読み込み中...</p></div>
+
+  const defaultValue = category.name;
 
   return (
     <div className="p-8">
@@ -86,8 +95,7 @@ export default function Page() {
       </div>
       <CategoryForm
         mode="edit"
-        name={name}
-        setName={setName}
+        defaultValue={defaultValue}
         onSubmit={handleSubmit}
         onDelete={handleDeletePost}
         disabled={isSubmitting}

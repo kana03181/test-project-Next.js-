@@ -1,44 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PostsIndexResponse } from "@/app/api/posts/route";
-
+// import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
-  const [posts, setPosts] = useState<PostsIndexResponse["posts"]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetcher = async() => {
-      try {
-        setLoading(true);
-        setError(null);
+  const {data, error, isLoading} = useFetch<PostsIndexResponse>("/api/admin/posts");
 
-        const res = await fetch("/api/admin/posts");
-        if (!res.ok) {
-          throw new Error("記事の取得に失敗しました");
-        }
+  if(isLoading) return <div><p>読み込み中...</p></div>
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
 
-        const data = await res.json();
-        // console.log("APIデータ", data);
-
-        setPosts(data.posts);
-
-      } catch (err) {
-        if (err instanceof Error) {
-          setError("不明なエラーです")
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetcher();
-  }, [])
-
-  if(loading) return <div><p>読み込み中...</p></div>
-  if (error) return <div><p>エラー：{error}</p></div>
+  const posts = data?.posts ?? [];
 
   return (
     <div className="p-8">

@@ -1,45 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
-  const [categories, setCategories] = useState<CategoriesIndexResponse["categories"]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
+  const { data, error, isLoading} = useFetch<CategoriesIndexResponse>("/api/admin/categories");
 
-  useEffect(() => {
-    const fetcher = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  if(isLoading) return <div><p>読み込み中...</p></div>
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
 
-        const res = await fetch("/api/admin/categories")
-
-        if (!res.ok) {
-          throw new Error("カテゴリーの取得に失敗しました");
-        }
-
-        const {categories} = await res.json();
-        setCategories(categories);
-
-      } catch (err) {
-        if (err instanceof Error) {
-          setError("不明なエラーです")
-        }
-
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetcher()
-  }, [])
-
-  if(loading) return <div><p>読み込み中...</p></div>
-  if (error) return <div><p>エラー：{error}</p></div>
-
+  const categories = data?.categories ?? [];
 
   return (
     <div className="p-8">

@@ -1,14 +1,15 @@
 //管理者_記事一覧取得API
 
 import { prisma } from "@/app/_libs/prisma";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { supabase } from "@/app/_libs/supabase";
 
 export type PostIndexResponse = {
   posts: {
     id: number
     title:string
     content:string
-    thumbnailUrl: string
+    thumbnailImageKey: string
     createdAt: Date
     updatedAt: Date
     postCategories: {
@@ -20,7 +21,14 @@ export type PostIndexResponse = {
   }[]
 }
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
+
+  const token = request.headers.get("Authorization") ?? "";
+  const { error } = await supabase.auth.getUser(token);
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 });
+
   try {
     const posts = await prisma.post.findMany({
       include: {
@@ -55,7 +63,7 @@ export type CreatePostRequestBody = {
   title: string
   content: string
   categories:{ id: number }[]
-  thumbnailUrl: string
+  thumbnailImageKey: string
 }
 
 // 投稿作成APIのレスポンスの型
@@ -72,19 +80,26 @@ export type CreatePostResponse = {
 
 // POSTという命名にすることで、POSTリクエストの時にこの関数が呼ばれる
 export const POST = async (request: Request) => {
+  const token = request.headers.get("Authorization") ?? "";
+  const { error } = await supabase.auth.getUser(token);
+
+  if (error) {
+    return NextResponse.json({ status: error.message }, { status: 400 });
+  }
+
   try {
     // リクエストのbodyを取得
     const body: CreatePostRequestBody = await request.json()
 
     // bodyの中からtitle, content, categories, thumbnailUrlを取り出す
-    const { title, content, categories, thumbnailUrl } = body
+    const { title, content, categories, thumbnailImageKey } = body
 
     // 投稿をDBに生成
     const data = await prisma.post.create({
       data: {
         title,
         content,
-        thumbnailUrl,
+        thumbnailImageKey,
       },
     })
 
