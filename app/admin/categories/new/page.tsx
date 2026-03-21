@@ -57,6 +57,7 @@ export default function Page() {
       <div>
         <CategoryForm
           mode="new"
+          defaultValue=""
           onSubmit={handleSubmit}
           disabled={isSubmitting}
         />

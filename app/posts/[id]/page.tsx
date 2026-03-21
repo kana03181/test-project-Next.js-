@@ -6,32 +6,15 @@ import { useParams } from "next/navigation";
 import { PostShowResponse } from "@/app/api/posts/[id]/route";
 import HomeStyles from "@/app/_styles/Home.module.css";
 import { supabase } from "@/app/_libs/supabase";
-import useSWR from "swr";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
   const { id } = useParams<{ id: string }>();
-
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
     null,
   )
 
-  // SWR fetcher
-  const fetcher = async (url: string) => {
-  const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error("記事の取得に失敗しました");
-    }
-
-    return res.json();
-  }
-
-  // SWR
-  const { data, error, isLoading } = useSWR<PostShowResponse>(
-    id ? `/api/posts/${id}` : null,
-    fetcher
-  );
-
+  const { data, error, isLoading } = useFetch<PostShowResponse>(`/api/posts/${id}`);
   const post = data?.post;
 
   // サムネイル取得

@@ -9,7 +9,7 @@ type FormValues = {
 
 type Props = {
   mode: "new" | "edit",
-  defaultValue?: string
+  defaultValue: string
   onSubmit: (data: FormValues) => void
   onDelete?: () => void
   disabled: boolean
@@ -26,38 +26,40 @@ export default function CategoryForm({
     register,
     handleSubmit,
     reset,
-    formState:{errors}
-  } = useForm<FormValues>();
-  useEffect(() => {
-    reset({ name: defaultValue || "" });
-  }, [defaultValue, reset]);
+    formState:{errors, isSubmitting}
+  } = useForm<FormValues>({
+    defaultValues:{name: defaultValue}
+  });
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="grid gap-3">
-          <Input
-            label="カテゴリー名"
-            type="text"
-            id="name"
-            {...register("name",{required:"カテゴリー名を入力してください"})}
-            disabled={disabled}
-            className="mt-1 block w-full rounded-md border border-gray-200 p-3"
-            withStyle={false}
+        <Input
+          label="カテゴリー名"
+          type="text"
+          id="name"
+          {...register("name",{required:"カテゴリー名を入力してください"})}
+          disabled={disabled || isSubmitting}
+          className="mt-1 block w-full rounded-md border border-gray-200 p-3"
+          withStyle={false}
         />
         {errors.name && ( <p className={FormStyle.error}>{ errors.name?.message }</p> ) }
         <div>
           <button
             type="submit"
-            disabled={disabled}
+            disabled={disabled || isSubmitting}
             className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             {mode === "new" ? "作成" : "更新"}
           </button>
+          {onDelete && (
           <button
             type="button"
-            disabled={disabled}
+            disabled={disabled || isSubmitting}
             onClick={onDelete}
             className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ml-2">
             削除
           </button>
+          )}
         </div>
       </div>
     </form>

@@ -2,32 +2,12 @@
 
 import Link from "next/link";
 import { PostsIndexResponse } from "@/app/api/posts/route";
-import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
-import useSWR from 'swr'
+// import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
-  const { token } = useSupabaseSession();
 
-
-  const fetcher = async (url: string) => {
-    const res = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token!,
-      }
-    });
-
-    if (!res.ok) {
-      throw new Error("記事の取得に失敗しました");
-    }
-
-    return res.json();
-  };
-
-  const {data, error, isLoading} = useSWR<PostsIndexResponse>(
-    token ? "/api/admin/posts" : null,
-    fetcher
-  );
+  const {data, error, isLoading} = useFetch<PostsIndexResponse>("/api/admin/posts");
 
   if(isLoading) return <div><p>読み込み中...</p></div>
   if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>

@@ -3,30 +3,11 @@
 import Link from "next/link";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
-import useSWR from 'swr'
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
-  const { token } = useSupabaseSession();
 
-  const fetcher = async (url: string) => {
-    const res = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token!,
-      }
-    })
-
-    if (!res.ok) {
-      throw new Error("カテゴリーの取得に失敗しました");
-    }
-
-    return res.json();
-  }
-
-  const { data, error, isLoading } = useSWR<CategoriesIndexResponse>(
-    token ? "/api/admin/categories" : null,
-    fetcher
-  );
+  const { data, error, isLoading} = useFetch<CategoriesIndexResponse>("/api/admin/categories");
 
   if(isLoading) return <div><p>読み込み中...</p></div>
   if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>

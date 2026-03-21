@@ -69,6 +69,12 @@ export default function Page() {
       </div>
       <div>
         <PostForm
+          defaultValues={{
+            title: "",
+            content: "",
+            thumbnailImageKey: "",
+            categories: []
+          }}
           mode="new"
           onSubmit={handleSubmit}
           disabled={isSubmitting}

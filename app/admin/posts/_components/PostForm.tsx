@@ -2,6 +2,7 @@
 import { Category } from "@/app/api/admin/posts/[id]/route";
 import CategoriesSelect from "@/app/admin/posts/_components/CategoriesSelect"
 import Label from "@/app/_components/Label"
+import Input from "@/app/_components/Input"
 import { supabase } from "@/app/_libs/supabase";
 import { v4 as uuidv4 } from "uuid";
 import { useState, ChangeEvent, useEffect } from "react";
@@ -17,7 +18,7 @@ type FormData = {
 
 type Props = {
   mode: "new" | "edit"
-  defaultValues?: FormData
+  defaultValues: FormData
   onSubmit: (data: FormData) => void
   onDelete?: () => void
   disabled: boolean
@@ -30,12 +31,6 @@ export default function PostForm({
   onDelete,
   disabled,
 }: Props) {
-  const formDefaultValues = defaultValues ?? {
-    title: "",
-    content: "",
-    thumbnailImageKey: "",
-    categories: []
-  };
 
   const {
     register,
@@ -43,9 +38,11 @@ export default function PostForm({
     setValue,
     watch,
     control,
-    reset
+    reset,
+    formState:{isSubmitting}
+
   } = useForm<FormData>({
-    defaultValues: formDefaultValues
+    defaultValues
   });
 
   const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(null);
@@ -101,34 +98,31 @@ export default function PostForm({
   <form onSubmit={handleSubmit(onSubmit)}>
     <div className="grid gap-3">
       <div>
-        <Label htmlFor="title">タイトル</Label>
-        <input
-        // type="text"
-          // onChange={(e) => setTitle(e.target.value)}
-          // value={title}
+        <Input
           {...register("title", { required:"必須です" } )}
+          label="タイトル"
+          type="text"
           id="title"
-          disabled={disabled}
+          disabled={disabled || isSubmitting}
+          withStyle={false}
           className="mt-1 block w-full rounded-md border border-gray-200 p-3"
         />
       </div>
       <div>
         <Label htmlFor="content">内容</Label>
         <textarea
-          // value={content}
-          // onChange={(e) => setContent(e.target.value)}
           {...register("content", { required:"必須です" })}
           id="content"
-          disabled={disabled}
+          disabled={disabled || isSubmitting}
           className="mt-1 block w-full rounded-md border border-gray-200 p-3"
         />
       </div>
       <div>
-        <Label htmlFor="thumbnailImageKey">サムネイルURL</Label>
-        <input
-          // accept="image/*"
+        <Input
+          label="サムネイルURL"
           type="file"
           id="thumbnailImageKey"
+          withStyle={false}
           onChange={handleImageChange}
           className="mt-1 block w-full rounded-md border border-gray-200 p-3"
         />
@@ -144,25 +138,25 @@ export default function PostForm({
         )}
       </div>
       <div>
-          <Label>カテゴリー</Label>
-          <Controller
-            name="categories"
-            control={control}
-            render={({ field }) => (
-              <CategoriesSelect
-                value={field.value}
-                onChange={field.onChange}
-                disabled={disabled}
-              />
-            )}
-          />
+        <Label>カテゴリー</Label>
+        <Controller
+          name="categories"
+          control={control}
+          render={({ field }) => (
+            <CategoriesSelect
+              value={field.value}
+              onChange={field.onChange}
+              disabled={disabled || isSubmitting}
+            />
+          )}
+        />
       </div>
       <div>
-        <button type="submit" disabled={disabled} className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <button type="submit" disabled={disabled || isSubmitting} className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           {mode === "new" ? "作成" : "更新"}
         </button>
         {onDelete && (
-          <button type="button" disabled={disabled} onClick={onDelete} className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ml-2">
+          <button type="button" disabled={disabled || isSubmitting} onClick={onDelete} className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 ml-2">
             削除
           </button>
         )}

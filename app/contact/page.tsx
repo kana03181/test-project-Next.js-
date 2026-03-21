@@ -59,11 +59,6 @@ export default function Contact() {
             },
           })}
           disabled={isSubmitting}
-          // type="text"
-          // id="name"
-          // name="name"
-          // value={name}
-          // onChange={(e) => setName(e.target.value)}
         />
         {errors.name && ( <p className={FormStyle.error}>{ errors.name.message }</p> )}
         <Input
@@ -76,10 +71,6 @@ export default function Contact() {
               message: "メールアドレスの形式が正しくありません。",
             },
           })}
-          // id="email"
-          // name="email"
-          // value={email}
-          // onChange={(e) => setEmail(e.target.value)}
           disabled={isSubmitting}
         />
         {errors.email && ( <p className={FormStyle.error}>{ errors.email.message }</p> )}
@@ -92,10 +83,6 @@ export default function Contact() {
               message: "本文は500文字以内で入力してください。",
             },
           })}
-          // id="message"
-          // name="message"
-          // value={message}
-          // onChange={(e) => setMessage(e.target.value)}
           disabled={isSubmitting}
         />
         {errors.message && ( <p className={FormStyle.error}>{errors.message.message}</p> )}

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { CategoryShowResponse, UpdateCategoryRequestBody} from "@/app/api/admin/categories/[id]/route";
 import CategoryForm from "@/app/admin/categories/_components/CategoryForm";
 import { useSupabaseSession } from "@/app/_hooks/useSupabaseSession";
-import useSWR from "swr";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 export default function Page() {
   const { id } = useParams();
@@ -80,31 +80,13 @@ export default function Page() {
   }
 
   //カテゴリー取得
-    const fetcher = async(url: string) => {
-      const res = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token!,
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error("カテゴリーの取得に失敗しました");
-      }
-
-      return res.json();
-    }
-
-  const { data, error, isLoading } = useSWR<CategoryShowResponse>(
-    token && id ? `/api/admin/categories/${id}` : null,
-    fetcher
-  );
-
-  if(isLoading) return <div><p>読み込み中...</p></div>
-  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
-
+  const { data, error } = useFetch<CategoryShowResponse>(`/api/admin/categories/${id}`);
   const category = data?.category;
-  const defaultValue = category?.name ?? "";
+
+  if (error) return <div><p>エラー：{error instanceof Error ? error.message : "不明なエラー"}</p></div>
+  if(!category) return <div><p>読み込み中...</p></div>
+
+  const defaultValue = category.name;
 
   return (
     <div className="p-8">
